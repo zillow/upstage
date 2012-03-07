@@ -1,51 +1,119 @@
-<!doctype html>
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title><%= @headers['title'] %></title>
 
-<title><%= @headers['title'] %></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=1024, user-scalable=no">
 
-<meta charset="utf-8">
-<meta name="author" content="<%= @headers['author'] %>">
-<meta name="copyright" content="<%= @headers['copyright'] %>">
+    <meta name="author" content="<%= @headers['author'] %>">
+    <meta name="copyright" content="<%= @headers['copyright'] %>">
 
-<link rel="stylesheet" href="build/upstage-keynote-min.css" media="screen">
-
-<style>
-  <%= content_for :css %>
-</style>
-
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.4.1/build/cssreset/cssreset-min.css">
+    <link rel="stylesheet" href="build/upstage-deck-core-min.css">
+    <link rel="stylesheet" href="theme/transition.css">
+    <link rel="stylesheet" href="theme/yuiconf2011.css">
+    <style>
+    <%= content_for :css %>
+    </style>
+</head>
 <body>
 
-<div id="bd">
-
-<div class="presentation">
+<div id="bd" class="deck-container">
 
     <div class="slide title">
-        <h1><%= @headers['title'] %></h1>
+        <h1 class="title"><%= @headers['title'] %></h1>
         <p><%= @headers['author'] %></p>
     </div>
-   
+
 <%= @content %>
 
 </div>
 
-</div>
-
-<div id="ft">
-    <p class="credit">
-        <%= @headers['footer'] %>
-    </p>
-</div>
-
-<script src="yui3/build/yui/yui-min.js"></script>
-<script src="build/upstage-min.js"></script>
-<script src="build/lang/upstage-l10n.js"></script>
+<script src="http://yui.yahooapis.com/3.4.1/build/yui/yui-min.js"></script>
 <script>
-;YUI({
-    base : "yui3/build/"
-}).use("upstage", function (Y) {
-<%= content_for :upstage %>
-    Y.Upstage.fire("start");
+    if (!window.YUI) {
+        // Retry with a local URL.
+        document.write('<script src="yui3/build/yui/yui.js"><\/script>');
+        // Don't autodetect the base path (the CDN path didn't work).
+        document.write('<script>YUI.config.base = "yui3/build/";<\/script>');
+    }
+</script>
+<script>
+    YUI({
+        modules: {
+            "upstage-blank": {
+                fullpath: "build/upstage-blank-min.js",
+                requires: ["upstage-slideshow", "plugin"]
+            },
+            "upstage-controls": {
+                fullpath: "build/upstage-controls-min.js",
+                requires: ["upstage-slideshow", "widget", "transition", "node"]
+            },
+            "upstage-gesture": {
+                fullpath: "build/upstage-gesture-min.js",
+                requires: ["upstage-slideshow", "plugin", "event-move"]
+            },
+            "upstage-keyboard": {
+                fullpath: "build/upstage-keyboard-min.js",
+                requires: ["upstage-slideshow", "plugin", "event-key"]
+            },
+            "upstage-permalink": {
+                fullpath: "build/upstage-permalink-min.js",
+                requires: ["upstage-slideshow", "node", "plugin", "history"]
+            },
+            "upstage-slideshow": {
+                fullpath: "build/upstage-slideshow-min.js",
+                requires: ["oop", "node", "widget", "base-build"]
+            },
+            "gallery-prettify": {
+                fullpath: "http://derek.github.com/sandbox/yui/gallery-prettify/gallery-prettify.js",
+                requires: ["gallery-prettify-cssnight"]
+            },
+            "gallery-prettify-cssnight": {
+                fullpath: "theme/gallery-prettify-night.css",
+                type: "css"
+            }
+            // For controls plugin-widget:
+            // It should be a sub-Widget, but pluggable into deck.
+            // Also, it should create the prev/next links
+            // unlike deck.js which puts dummy links in markup.
+        },
+        debug: true,
+        filter: "min"
+    }).use(
+        "upstage-slideshow",
+        "upstage-keyboard",
+        "upstage-permalink",
+        // "upstage-gesture",
+        // "upstage-blank",
+        "gallery-prettify", // Optional: Syntax highlighting.
+        function (Y) {
+            // Upstage is a YUI widget.
+            var deck = new Y.Upstage({
+                srcNode: "#bd" // Where to find .slide elements.
+            });
 
-});
+            // Upstage does not do much without plugins.
+            // They are all optional. Use only what you need.
+            deck.plug([
+                Y.Plugin.UpstageKeyboard,
+                // Y.Plugin.UpstageBlank,
+                // Y.Plugin.UpstageGesture,
+                Y.Plugin.UpstagePermalink
+            ]);
+
+            <%= content_for :upstage %>
+
+            deck.render();
+
+            // Syntax highlighting for .prettyprint elements.
+            if (Y.prettyPrint) {
+                Y.prettyPrint();
+            }
+        }
+    );
 </script>
 
 </body>
+</html>
