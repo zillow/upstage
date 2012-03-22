@@ -3,7 +3,7 @@ build/lang/upstage_*
 build/lang/upstage-l10n_*
 build/lang/upstage.js
 build/*-debug.js
-build/upstage-*-min.js
+#build/upstage-*-min.js
 build/upstage-controls.js
 build/upstage-gesture.js
 build/upstage-keyboard.js
